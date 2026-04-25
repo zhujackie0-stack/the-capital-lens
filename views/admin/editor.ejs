@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — The Capital Lens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container main-content">
+    <div class="editor-header">
+      <a href="/capitallens/dashboard" class="back-link">← Back to Dashboard</a>
+      <h1><%= article ? 'Edit Article' : 'New Article' %></h1>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="<%= article && article.id ? '/capitallens/edit/' + article.id : '/capitallens/new' %>" class="editor-form">
+      <div class="form-row">
+        <div class="form-group form-group-grow">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" required placeholder="Article title" value="<%= article ? article.title : '' %>">
+        </div>
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" name="category" required>
+            <option value="" disabled <%= !article || !article.category ? 'selected' : '' %>>Select...</option>
+            <option value="equity" <%= article && article.category === 'equity' ? 'selected' : '' %>>Equity</option>
+            <option value="fixed-income" <%= article && article.category === 'fixed-income' ? 'selected' : '' %>>Fixed-Income</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="author">Author Name</label>
+        <input type="text" id="author" name="author" required placeholder="e.g. John Smith" value="<%= article ? article.author : '' %>">
+      </div>
+
+      <div class="form-group">
+        <label for="body">Article Body</label>
+        <textarea id="body" name="body" rows="20" required placeholder="Write your research analysis here..."><%= article ? article.body : '' %></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><%= article && article.id ? 'Update Article' : 'Publish Article' %></button>
+        <a href="/capitallens/dashboard" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

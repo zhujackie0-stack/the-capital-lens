@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="<%= article.title %> by <%= article.author %> — The Capital Lens">
+  <title><%= article.title %> — The Capital Lens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('partials/header') %>
+
+  <main class="container main-content">
+    <article class="article-full">
+      <div class="article-header">
+        <a href="/section/<%= article.category %>" class="back-link">← Back to <%= article.category === 'equity' ? 'Equity Research' : 'Fixed-Income Research' %></a>
+        <span class="article-category <%= article.category === 'equity' ? 'equity' : 'fi' %>">
+          <%= article.category === 'equity' ? 'Equity' : 'Fixed-Income' %>
+        </span>
+        <h1><%= article.title %></h1>
+        <div class="article-meta">
+          <span class="meta-author">By <strong><%= article.author %></strong></span>
+          <span class="meta-separator">·</span>
+          <time class="meta-date"><%= new Date(article.created_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) %></time>
+          <% if (article.updated_at && article.updated_at !== article.created_at) { %>
+            <span class="meta-separator">·</span>
+            <span class="meta-updated">Updated <%= new Date(article.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+          <% } %>
+        </div>
+      </div>
+      <div class="article-body">
+        <%- article.body.replace(/\n/g, '<br>') %>
+      </div>
+    </article>
+  </main>
+
+  <%- include('partials/footer') %>
+</body>
+</html>

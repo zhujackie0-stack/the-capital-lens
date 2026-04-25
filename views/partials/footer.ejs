@@ -1,0 +1,17 @@
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>&copy; <%= new Date().getFullYear() %> The Capital Lens. All rights reserved.</p>
+    <p class="footer-tagline">Independent research. Informed decisions.</p>
+  </div>
+</footer>
+<script>
+  // Mobile nav toggle
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('main-nav');
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      nav.classList.toggle('open');
+      toggle.classList.toggle('open');
+    });
+  }
+</script>

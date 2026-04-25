@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — The Capital Lens</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container main-content">
+    <div class="dashboard-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="dashboard-welcome">Welcome back, <strong><%= currentUser.displayName %></strong></p>
+      </div>
+      <div class="dashboard-actions">
+        <a href="/capitallens/new" class="btn btn-primary">+ New Article</a>
+        <a href="/capitallens/logout" class="btn btn-ghost">Log Out</a>
+      </div>
+    </div>
+
+    <% if (articles.length === 0) { %>
+      <div class="empty-state-large">
+        <p>No articles yet. Start by creating your first piece of research.</p>
+        <a href="/capitallens/new" class="btn btn-primary">Create Article</a>
+      </div>
+    <% } else { %>
+      <div class="dashboard-table-wrap">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Category</th>
+              <th>Published</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% articles.forEach(function(a) { %>
+              <tr>
+                <td>
+                  <a href="/article/<%= a.id %>" class="table-link" target="_blank"><%= a.title %></a>
+                </td>
+                <td><%= a.author %></td>
+                <td>
+                  <span class="badge <%= a.category === 'equity' ? 'badge-equity' : 'badge-fi' %>">
+                    <%= a.category === 'equity' ? 'Equity' : 'Fixed-Income' %>
+                  </span>
+                </td>
+                <td><%= new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></td>
+                <td class="col-actions">
+                  <a href="/capitallens/edit/<%= a.id %>" class="btn btn-sm btn-outline">Edit</a>
+                  <form method="POST" action="/capitallens/delete/<%= a.id %>" style="display:inline" onsubmit="return confirm('Delete this article?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

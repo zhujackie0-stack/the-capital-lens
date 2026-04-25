@@ -1,0 +1,18 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">
+      <span class="logo-icon">◆</span>
+      <span class="logo-text">The Capital Lens</span>
+    </a>
+    <nav class="main-nav" id="main-nav">
+      <a href="/section/equity">Equity</a>
+      <a href="/section/fixed-income">Fixed-Income</a>
+      <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+        <a href="/capitallens/dashboard" class="nav-admin">Dashboard</a>
+      <% } %>
+    </nav>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>

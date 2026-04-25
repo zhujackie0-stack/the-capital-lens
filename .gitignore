@@ -1,0 +1,4 @@
+node_modules/
+blog.db
+.DS_Store
+*.log
