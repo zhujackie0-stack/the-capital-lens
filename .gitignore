@@ -2,3 +2,5 @@ node_modules/
 blog.db
 .DS_Store
 *.log
+public/uploads/*
+!public/uploads/.gitkeep

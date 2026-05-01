@@ -1,6 +1,47 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const mammoth = require('mammoth');
+const path = require('path');
+const fs = require('fs');
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer config for image uploads
+const imageStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'img-' + uniqueSuffix + ext);
+  }
+});
+
+const imageUpload = multer({
+  storage: imageStorage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|gif|webp|svg/;
+    const extOk = allowed.test(path.extname(file.originalname).toLowerCase());
+    const mimeOk = allowed.test(file.mimetype.split('/')[1]);
+    cb(null, extOk || mimeOk);
+  }
+});
+
+// Multer config for DOCX uploads (memory storage for mammoth)
+const docxUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, ext === '.docx');
+  }
+});
 
 // Helper: convert sql.js result to array of objects
 function queryAll(db, sql, params) {
@@ -117,6 +158,49 @@ router.post('/delete/:id', requireAuth, (req, res) => {
   db.run('DELETE FROM articles WHERE id = ?', [parseInt(req.params.id)]);
   save(db);
   res.redirect('/capitallens/dashboard');
+});
+
+// ============================================
+// IMAGE UPLOAD (for inline images in editor)
+// ============================================
+router.post('/upload-image', requireAuth, imageUpload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No image file provided or invalid format' });
+  }
+  const url = '/uploads/' + req.file.filename;
+  res.json({ url });
+});
+
+// ============================================
+// DOCX UPLOAD (convert to HTML)
+// ============================================
+router.post('/upload-docx', requireAuth, docxUpload.single('docx'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No .docx file provided' });
+  }
+
+  try {
+    const result = await mammoth.convertToHtml(
+      { buffer: req.file.buffer },
+      {
+        styleMap: [
+          "p[style-name='Heading 1'] => h2:fresh",
+          "p[style-name='Heading 2'] => h3:fresh",
+          "p[style-name='Heading 3'] => h4:fresh",
+          "p[style-name='Quote'] => blockquote > p:fresh",
+          "p[style-name='Intense Quote'] => blockquote > p:fresh"
+        ]
+      }
+    );
+
+    res.json({
+      html: result.value,
+      messages: result.messages.filter(m => m.type === 'warning').map(m => m.message)
+    });
+  } catch (err) {
+    console.error('DOCX conversion error:', err);
+    res.status(500).json({ error: 'Failed to convert DOCX file' });
+  }
 });
 
 module.exports = router;

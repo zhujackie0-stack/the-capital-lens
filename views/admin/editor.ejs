@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
+  <!-- Quill.js -->
+  <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 </head>
 <body>
   <%- include('../partials/header') %>
@@ -22,7 +24,7 @@
       <div class="alert alert-error"><%= error %></div>
     <% } %>
 
-    <form method="POST" action="<%= article && article.id ? '/capitallens/edit/' + article.id : '/capitallens/new' %>" class="editor-form">
+    <form method="POST" action="<%= article && article.id ? '/capitallens/edit/' + article.id : '/capitallens/new' %>" class="editor-form" id="articleForm">
       <div class="form-row">
         <div class="form-group form-group-grow">
           <label for="title">Title</label>
@@ -43,18 +45,215 @@
         <input type="text" id="author" name="author" required placeholder="e.g. John Smith" value="<%= article ? article.author : '' %>">
       </div>
 
+      <!-- DOCX Upload Zone -->
+      <div class="docx-upload-zone" id="docxZone">
+        <div class="docx-upload-inner">
+          <div class="docx-icon">📄</div>
+          <p class="docx-text"><strong>Import from Word</strong></p>
+          <p class="docx-hint">Drag & drop a .docx file here, or <label for="docxFile" class="docx-browse">browse</label></p>
+          <input type="file" id="docxFile" accept=".docx" hidden>
+        </div>
+        <div class="docx-loading" id="docxLoading" style="display:none">
+          <div class="docx-spinner"></div>
+          <p>Converting document...</p>
+        </div>
+        <div class="docx-success" id="docxSuccess" style="display:none">
+          <span>✓</span> Document imported successfully
+        </div>
+      </div>
+
+      <!-- Rich Text Editor -->
       <div class="form-group">
-        <label for="body">Article Body</label>
-        <textarea id="body" name="body" rows="20" required placeholder="Write your research analysis here..."><%= article ? article.body : '' %></textarea>
+        <label>Article Body</label>
+        <div id="quill-toolbar">
+          <span class="ql-formats">
+            <select class="ql-header">
+              <option value="2">Heading</option>
+              <option value="3">Sub-heading</option>
+              <option selected>Normal</option>
+            </select>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-underline"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-blockquote"></button>
+            <button class="ql-code-block"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-list" value="ordered"></button>
+            <button class="ql-list" value="bullet"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-link"></button>
+            <button class="ql-image" id="imageUploadBtn"></button>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-clean"></button>
+          </span>
+        </div>
+        <div id="quill-editor"></div>
+        <textarea id="body" name="body" style="display:none;"><%= article ? article.body : '' %></textarea>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="btn btn-primary"><%= article && article.id ? 'Update Article' : 'Publish Article' %></button>
+        <button type="submit" class="btn btn-primary" id="submitBtn"><%= article && article.id ? 'Update Article' : 'Publish Article' %></button>
         <a href="/capitallens/dashboard" class="btn btn-ghost">Cancel</a>
       </div>
     </form>
   </main>
 
   <%- include('../partials/footer') %>
+
+  <!-- Quill.js -->
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script>
+    // ============================================
+    // QUILL EDITOR INIT
+    // ============================================
+    const quill = new Quill('#quill-editor', {
+      modules: {
+        toolbar: {
+          container: '#quill-toolbar',
+          handlers: {
+            image: imageHandler
+          }
+        }
+      },
+      theme: 'snow',
+      placeholder: 'Write your research analysis here...'
+    });
+
+    // Load existing content (for editing)
+    const existingBody = document.getElementById('body').value;
+    if (existingBody && existingBody.trim()) {
+      quill.root.innerHTML = existingBody;
+    }
+
+    // Sync editor content to hidden textarea on submit
+    document.getElementById('articleForm').addEventListener('submit', function(e) {
+      const html = quill.root.innerHTML;
+      if (!html || html === '<p><br></p>') {
+        e.preventDefault();
+        alert('Article body is required');
+        return;
+      }
+      document.getElementById('body').value = html;
+    });
+
+    // ============================================
+    // IMAGE UPLOAD HANDLER
+    // ============================================
+    function imageHandler() {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+      input.setAttribute('accept', 'image/*');
+      input.click();
+
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+
+        // Show uploading state
+        const range = quill.getSelection(true);
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+          const response = await fetch('/capitallens/upload-image', {
+            method: 'POST',
+            body: formData
+          });
+
+          if (!response.ok) throw new Error('Upload failed');
+
+          const data = await response.json();
+          quill.insertEmbed(range.index, 'image', data.url);
+          quill.setSelection(range.index + 1);
+        } catch (err) {
+          alert('Failed to upload image. Please try again.');
+          console.error('Image upload error:', err);
+        }
+      };
+    }
+
+    // ============================================
+    // DOCX UPLOAD
+    // ============================================
+    const docxZone = document.getElementById('docxZone');
+    const docxFile = document.getElementById('docxFile');
+    const docxLoading = document.getElementById('docxLoading');
+    const docxSuccess = document.getElementById('docxSuccess');
+
+    // Drag and drop
+    docxZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      docxZone.classList.add('drag-over');
+    });
+
+    docxZone.addEventListener('dragleave', () => {
+      docxZone.classList.remove('drag-over');
+    });
+
+    docxZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      docxZone.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && file.name.endsWith('.docx')) {
+        uploadDocx(file);
+      } else {
+        alert('Please drop a .docx file');
+      }
+    });
+
+    // File input
+    docxFile.addEventListener('change', () => {
+      if (docxFile.files[0]) {
+        uploadDocx(docxFile.files[0]);
+      }
+    });
+
+    async function uploadDocx(file) {
+      docxLoading.style.display = 'flex';
+      docxSuccess.style.display = 'none';
+
+      const formData = new FormData();
+      formData.append('docx', file);
+
+      try {
+        const response = await fetch('/capitallens/upload-docx', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Conversion failed');
+
+        const data = await response.json();
+
+        // Load converted HTML into Quill
+        quill.root.innerHTML = data.html;
+
+        docxLoading.style.display = 'none';
+        docxSuccess.style.display = 'flex';
+
+        // Show warnings if any
+        if (data.messages && data.messages.length > 0) {
+          console.warn('DOCX conversion warnings:', data.messages);
+        }
+
+        // Auto-hide success message
+        setTimeout(() => {
+          docxSuccess.style.display = 'none';
+        }, 4000);
+      } catch (err) {
+        docxLoading.style.display = 'none';
+        alert('Failed to convert DOCX file. Please try again.');
+        console.error('DOCX upload error:', err);
+      }
+    }
+  </script>
 </body>
 </html>
