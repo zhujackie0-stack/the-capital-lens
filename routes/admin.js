@@ -17,31 +17,60 @@ const imageStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
     cb(null, 'img-' + uniqueSuffix + ext);
   }
 });
 
 const imageUpload = multer({
   storage: imageStorage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
-    const allowed = /jpeg|jpg|png|gif|webp|svg/;
-    const extOk = allowed.test(path.extname(file.originalname).toLowerCase());
-    const mimeOk = allowed.test(file.mimetype.split('/')[1]);
-    cb(null, extOk || mimeOk);
+    // Accept any image MIME type
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
   }
 });
 
 // Multer config for DOCX uploads (memory storage for mammoth)
 const docxUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, ext === '.docx');
+    const isDocx = ext === '.docx' || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    cb(null, isDocx);
   }
 });
+
+// Helper: save a buffer as an image file and return its URL
+function saveImageBuffer(buffer, extension) {
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  const ext = extension || '.png';
+  const filename = 'docx-' + uniqueSuffix + ext;
+  const filepath = path.join(uploadsDir, filename);
+  fs.writeFileSync(filepath, buffer);
+  return '/uploads/' + filename;
+}
+
+// Helper: get file extension from content type
+function getExtFromContentType(contentType) {
+  const map = {
+    'image/png': '.png',
+    'image/jpeg': '.jpg',
+    'image/gif': '.gif',
+    'image/bmp': '.bmp',
+    'image/tiff': '.tiff',
+    'image/webp': '.webp',
+    'image/svg+xml': '.svg',
+    'image/x-emf': '.emf',
+    'image/x-wmf': '.wmf'
+  };
+  return map[contentType] || '.png';
+}
 
 // Helper: convert sql.js result to array of objects
 function queryAll(db, sql, params) {
@@ -172,7 +201,7 @@ router.post('/upload-image', requireAuth, imageUpload.single('image'), (req, res
 });
 
 // ============================================
-// DOCX UPLOAD (convert to HTML)
+// DOCX UPLOAD (convert to HTML with images)
 // ============================================
 router.post('/upload-docx', requireAuth, docxUpload.single('docx'), async (req, res) => {
   if (!req.file) {
@@ -189,7 +218,16 @@ router.post('/upload-docx', requireAuth, docxUpload.single('docx'), async (req, 
           "p[style-name='Heading 3'] => h4:fresh",
           "p[style-name='Quote'] => blockquote > p:fresh",
           "p[style-name='Intense Quote'] => blockquote > p:fresh"
-        ]
+        ],
+        // Save embedded images to disk instead of base64
+        convertImage: mammoth.images.imgElement(function(image) {
+          return image.read("base64").then(function(imageBuffer) {
+            const ext = getExtFromContentType(image.contentType);
+            const buffer = Buffer.from(imageBuffer, 'base64');
+            const url = saveImageBuffer(buffer, ext);
+            return { src: url };
+          });
+        })
       }
     );
 
@@ -199,7 +237,7 @@ router.post('/upload-docx', requireAuth, docxUpload.single('docx'), async (req, 
     });
   } catch (err) {
     console.error('DOCX conversion error:', err);
-    res.status(500).json({ error: 'Failed to convert DOCX file' });
+    res.status(500).json({ error: 'Failed to convert DOCX file: ' + err.message });
   }
 });
 
