@@ -36,7 +36,6 @@
           <a href="/article/<%= a.id %>" class="article-row">
             <div class="article-row-content">
               <h3 class="row-title"><%= a.title %></h3>
-              <p class="row-excerpt"><%= a.excerpt %>...</p>
               <div class="row-meta">
                 <span class="row-author"><%= a.author %></span>
                 <span class="row-date"><%= new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
