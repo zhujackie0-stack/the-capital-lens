@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, '..', 'blog.db');
+const DB_PATH = process.env.DATA_DIR ? path.join(process.env.DATA_DIR, 'blog.db') : path.join(__dirname, '..', 'blog.db');
 
 async function initDatabase() {
   const SQL = await initSqlJs();
