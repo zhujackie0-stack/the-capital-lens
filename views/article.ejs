@@ -16,9 +16,9 @@
   <main class="container main-content">
     <article class="article-full">
       <div class="article-header">
-        <a href="/section/<%= article.category %>" class="back-link">← Back to <%= article.category === 'equity' ? 'Equity Research' : 'Fixed-Income Research' %></a>
-        <span class="article-category <%= article.category === 'equity' ? 'equity' : 'fi' %>">
-          <%= article.category === 'equity' ? 'Equity' : 'Fixed-Income' %>
+        <a href="/section/<%= article.category %>" class="back-link">← Back to <%= typeof categoryName !== 'undefined' ? categoryName : article.category %></a>
+        <span class="article-category <%= article.category === 'equity' ? 'equity' : article.category === 'fixed-income' ? 'fi' : 'career' %>">
+          <%= typeof categoryName !== 'undefined' ? categoryName : article.category %>
         </span>
         <h1><%= article.title %></h1>
         <div class="article-meta">

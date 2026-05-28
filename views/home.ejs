@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Independent equity and fixed-income research — rigorous analysis for finance professionals and students.">
+  <meta name="description" content="Independent equity and fixed-income research, career guides — rigorous analysis for finance professionals and students.">
   <title>Home — The Capital Lens</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,61 +16,124 @@
   <section class="hero">
     <div class="hero-content">
       <h1>The Capital Lens</h1>
-      <p class="hero-tagline">Independent Equity & Fixed-Income Research</p>
+      <p class="hero-tagline">Independent Research & Career Insights for Finance</p>
       <p class="hero-subtitle">Rigorous analysis for finance professionals, investors, and students seeking deeper market insight.</p>
     </div>
   </section>
 
   <main class="container main-content">
-    <section class="home-sections">
-      <div class="section-block">
-        <div class="section-header">
-          <h2>Equity Research</h2>
-          <a href="/section/equity" class="view-all">View All →</a>
-        </div>
-        <% if (equityArticles.length === 0) { %>
-          <p class="empty-state">No articles published yet.</p>
-        <% } else { %>
-          <div class="article-grid">
-            <% equityArticles.forEach(function(a) { %>
-              <a href="/article/<%= a.id %>" class="article-card">
-                <span class="card-category equity">Equity</span>
-                <h3 class="card-title"><%= a.title %></h3>
-                <div class="card-meta">
-                  <span class="card-author"><%= a.author %></span>
-                  <span class="card-date"><%= new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
-                </div>
-              </a>
-            <% }); %>
-          </div>
-        <% } %>
-      </div>
+    <!-- Tab Navigation -->
+    <div class="tab-nav" id="tabNav">
+      <button class="tab-btn active" data-tab="investment-research" id="tab-investment-research">
+        <span class="tab-icon">📊</span>
+        Investment Research
+      </button>
+      <button class="tab-btn" data-tab="career-paths" id="tab-career-paths">
+        <span class="tab-icon">🎯</span>
+        Career Paths in Finance
+      </button>
+    </div>
 
-      <div class="section-block">
-        <div class="section-header">
-          <h2>Fixed-Income Research</h2>
-          <a href="/section/fixed-income" class="view-all">View All →</a>
-        </div>
-        <% if (fiArticles.length === 0) { %>
-          <p class="empty-state">No articles published yet.</p>
-        <% } else { %>
-          <div class="article-grid">
-            <% fiArticles.forEach(function(a) { %>
-              <a href="/article/<%= a.id %>" class="article-card">
-                <span class="card-category fi">Fixed-Income</span>
-                <h3 class="card-title"><%= a.title %></h3>
-                <div class="card-meta">
-                  <span class="card-author"><%= a.author %></span>
-                  <span class="card-date"><%= new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
-                </div>
-              </a>
-            <% }); %>
+    <!-- Investment Research Tab -->
+    <div class="tab-panel active" id="panel-investment-research">
+      <section class="home-sections">
+        <div class="section-block">
+          <div class="section-header">
+            <h2>Equity Research</h2>
+            <a href="/section/equity" class="view-all">View All →</a>
           </div>
-        <% } %>
-      </div>
-    </section>
+          <% if (equityArticles.length === 0) { %>
+            <p class="empty-state">No articles published yet.</p>
+          <% } else { %>
+            <div class="article-grid">
+              <% equityArticles.forEach(function(a) { %>
+                <a href="/article/<%= a.id %>" class="article-card">
+                  <span class="card-category equity">Equity</span>
+                  <h3 class="card-title"><%= a.title %></h3>
+                  <div class="card-meta">
+                    <span class="card-author"><%= a.author %></span>
+                    <span class="card-date"><%= new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="section-block">
+          <div class="section-header">
+            <h2>Fixed-Income Research</h2>
+            <a href="/section/fixed-income" class="view-all">View All →</a>
+          </div>
+          <% if (fiArticles.length === 0) { %>
+            <p class="empty-state">No articles published yet.</p>
+          <% } else { %>
+            <div class="article-grid">
+              <% fiArticles.forEach(function(a) { %>
+                <a href="/article/<%= a.id %>" class="article-card">
+                  <span class="card-category fi">Fixed-Income</span>
+                  <h3 class="card-title"><%= a.title %></h3>
+                  <div class="card-meta">
+                    <span class="card-author"><%= a.author %></span>
+                    <span class="card-date"><%= new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+      </section>
+    </div>
+
+    <!-- Career Paths Tab -->
+    <div class="tab-panel" id="panel-career-paths">
+      <section class="home-sections">
+        <div class="section-block">
+          <div class="section-header">
+            <h2>Career Paths in Finance</h2>
+            <a href="/section/career-paths" class="view-all">View All →</a>
+          </div>
+          <% if (careerArticles.length === 0) { %>
+            <p class="empty-state">No articles published yet.</p>
+          <% } else { %>
+            <div class="article-grid">
+              <% careerArticles.forEach(function(a) { %>
+                <a href="/article/<%= a.id %>" class="article-card">
+                  <span class="card-category career">Career</span>
+                  <h3 class="card-title"><%= a.title %></h3>
+                  <div class="card-meta">
+                    <span class="card-author"><%= a.author %></span>
+                    <span class="card-date"><%= new Date(a.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          <% } %>
+        </div>
+      </section>
+    </div>
   </main>
 
   <%- include('partials/footer') %>
+
+  <script>
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+
+        // Update buttons
+        tabBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Update panels
+        tabPanels.forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + target).classList.add('active');
+      });
+    });
+  </script>
 </body>
 </html>

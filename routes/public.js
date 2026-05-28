@@ -18,22 +18,34 @@ function queryOne(db, sql, params) {
   return rows.length > 0 ? rows[0] : null;
 }
 
-// Homepage — latest articles from both sections
+// Category display helpers
+const categoryMeta = {
+  'equity': { name: 'Equity Research', section: 'investment-research', description: 'Deep-dive analysis on public equities — valuations, earnings, and investment theses.' },
+  'fixed-income': { name: 'Fixed-Income Research', section: 'investment-research', description: 'Research on bonds, credit markets, interest rates, and fixed-income strategies.' },
+  'career-paths': { name: 'Career Paths in Finance', section: 'career-paths', description: 'Guides, insights, and advice on building a career in the finance industry.' }
+};
+
+// Homepage — latest articles from all sections
 router.get('/', (req, res) => {
   const db = req.app.locals.db;
   const equityArticles = queryAll(db,
-    'SELECT id, title, author, category, created_at, substr(body, 1, 200) as excerpt FROM articles WHERE category = ? ORDER BY created_at DESC LIMIT 6',
+    'SELECT id, title, author, category, created_at FROM articles WHERE category = ? ORDER BY created_at DESC LIMIT 6',
     ['equity']
   );
   const fiArticles = queryAll(db,
-    'SELECT id, title, author, category, created_at, substr(body, 1, 200) as excerpt FROM articles WHERE category = ? ORDER BY created_at DESC LIMIT 6',
+    'SELECT id, title, author, category, created_at FROM articles WHERE category = ? ORDER BY created_at DESC LIMIT 6',
     ['fixed-income']
+  );
+  const careerArticles = queryAll(db,
+    'SELECT id, title, author, category, created_at FROM articles WHERE category = ? ORDER BY created_at DESC LIMIT 6',
+    ['career-paths']
   );
 
   res.render('home', {
     title: 'Home',
     equityArticles,
-    fiArticles
+    fiArticles,
+    careerArticles
   });
 });
 
@@ -41,20 +53,21 @@ router.get('/', (req, res) => {
 router.get('/section/:category', (req, res) => {
   const db = req.app.locals.db;
   const category = req.params.category;
-  if (!['equity', 'fixed-income'].includes(category)) {
+  if (!categoryMeta[category]) {
     return res.status(404).render('404', { title: 'Not Found' });
   }
   const articles = queryAll(db,
-    'SELECT id, title, author, category, created_at, substr(body, 1, 300) as excerpt FROM articles WHERE category = ? ORDER BY created_at DESC',
+    'SELECT id, title, author, category, created_at FROM articles WHERE category = ? ORDER BY created_at DESC',
     [category]
   );
 
-  const sectionName = category === 'equity' ? 'Equity Research' : 'Fixed-Income Research';
+  const meta = categoryMeta[category];
 
   res.render('section', {
-    title: sectionName,
-    sectionName,
+    title: meta.name,
+    sectionName: meta.name,
     category,
+    description: meta.description,
     articles
   });
 });
@@ -66,9 +79,11 @@ router.get('/article/:id', (req, res) => {
   if (!article) {
     return res.status(404).render('404', { title: 'Article Not Found' });
   }
+  const meta = categoryMeta[article.category] || { name: article.category, section: '' };
   res.render('article', {
     title: article.title,
-    article
+    article,
+    categoryName: meta.name
   });
 });
 

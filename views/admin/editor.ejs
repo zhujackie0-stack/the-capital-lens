@@ -34,8 +34,13 @@
           <label for="category">Category</label>
           <select id="category" name="category" required>
             <option value="" disabled <%= !article || !article.category ? 'selected' : '' %>>Select...</option>
-            <option value="equity" <%= article && article.category === 'equity' ? 'selected' : '' %>>Equity</option>
-            <option value="fixed-income" <%= article && article.category === 'fixed-income' ? 'selected' : '' %>>Fixed-Income</option>
+            <optgroup label="Investment Research">
+              <option value="equity" <%= article && article.category === 'equity' ? 'selected' : '' %>>Equity</option>
+              <option value="fixed-income" <%= article && article.category === 'fixed-income' ? 'selected' : '' %>>Fixed-Income</option>
+            </optgroup>
+            <optgroup label="Career">
+              <option value="career-paths" <%= article && article.category === 'career-paths' ? 'selected' : '' %>>Career Paths in Finance</option>
+            </optgroup>
           </select>
         </div>
       </div>

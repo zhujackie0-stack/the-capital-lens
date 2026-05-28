@@ -5,8 +5,8 @@
       <span class="logo-text">The Capital Lens</span>
     </a>
     <nav class="main-nav" id="main-nav">
-      <a href="/section/equity">Equity</a>
-      <a href="/section/fixed-income">Fixed-Income</a>
+      <a href="/#" onclick="switchTab('investment-research'); return false;">Investment Research</a>
+      <a href="/#" onclick="switchTab('career-paths'); return false;">Career Paths</a>
       <% if (typeof currentUser !== 'undefined' && currentUser) { %>
         <a href="/capitallens/dashboard" class="nav-admin">Dashboard</a>
       <% } %>
@@ -16,3 +16,43 @@
     </button>
   </div>
 </header>
+
+<script>
+  function switchTab(tabId) {
+    // If we're not on the homepage, navigate there with a hash
+    if (window.location.pathname !== '/') {
+      window.location.href = '/#' + tabId;
+      return;
+    }
+    // Switch tab on the homepage
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabPanels.forEach(p => p.classList.remove('active'));
+    const btn = document.getElementById('tab-' + tabId);
+    if (btn) btn.classList.add('active');
+    const panel = document.getElementById('panel-' + tabId);
+    if (panel) panel.classList.add('active');
+    // Scroll to tabs
+    const tabNav = document.getElementById('tabNav');
+    if (tabNav) tabNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Handle hash on page load (for nav links from other pages)
+  document.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) {
+      switchTab(hash);
+    }
+  });
+
+  // Mobile nav toggle
+  const navToggle = document.getElementById('nav-toggle');
+  const mainNav = document.getElementById('main-nav');
+  if (navToggle && mainNav) {
+    navToggle.addEventListener('click', () => {
+      navToggle.classList.toggle('open');
+      mainNav.classList.toggle('open');
+    });
+  }
+</script>

@@ -28,17 +28,41 @@ async function initDatabase() {
     )
   `);
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS articles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      author TEXT NOT NULL,
-      body TEXT NOT NULL,
-      category TEXT NOT NULL CHECK(category IN ('equity', 'fixed-income')),
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  // Check if articles table exists and needs migration
+  const tableExists = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='articles'");
+  if (tableExists.length > 0) {
+    // Table exists — migrate to new schema with expanded categories
+    try {
+      db.run(`CREATE TABLE IF NOT EXISTS articles_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        author TEXT NOT NULL,
+        body TEXT NOT NULL,
+        category TEXT NOT NULL CHECK(category IN ('equity', 'fixed-income', 'career-paths')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`);
+      db.run(`INSERT OR IGNORE INTO articles_new (id, title, author, body, category, created_at, updated_at)
+        SELECT id, title, author, body, category, created_at, updated_at FROM articles`);
+      db.run(`DROP TABLE articles`);
+      db.run(`ALTER TABLE articles_new RENAME TO articles`);
+    } catch (e) {
+      // If migration fails (e.g. already migrated), just continue
+      try { db.run(`DROP TABLE IF EXISTS articles_new`); } catch(e2) {}
+    }
+  } else {
+    db.run(`
+      CREATE TABLE IF NOT EXISTS articles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        author TEXT NOT NULL,
+        body TEXT NOT NULL,
+        category TEXT NOT NULL CHECK(category IN ('equity', 'fixed-income', 'career-paths')),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+  }
 
   // Seed default admin user if none exists
   const result = db.exec("SELECT id FROM users WHERE username = 'admin'");

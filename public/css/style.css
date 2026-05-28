@@ -25,6 +25,8 @@
   --color-equity-bg: #EDF7F5;
   --color-fi: #7C5C2E;
   --color-fi-bg: #FDF6ED;
+  --color-career: #6C3483;
+  --color-career-bg: #F4ECF7;
   --color-danger: #C0392B;
   --color-danger-hover: #A93226;
   --color-error-bg: #FDEDEC;
@@ -235,6 +237,62 @@ img {
 }
 
 /* ============================================
+   TAB NAVIGATION
+   ============================================ */
+.tab-nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 40px;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 14px 24px;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: all var(--transition);
+  letter-spacing: 0.01em;
+}
+
+.tab-btn:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-bg);
+}
+
+.tab-btn.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+  animation: tabFadeIn 0.3s ease;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
    HOME — SECTIONS
    ============================================ */
 .home-sections {
@@ -309,6 +367,10 @@ img {
 
 .card-category.fi {
   color: var(--color-fi);
+}
+
+.card-category.career {
+  color: var(--color-career);
 }
 
 .card-title {
@@ -471,6 +533,11 @@ img {
 .article-category.fi {
   background: var(--color-fi-bg);
   color: var(--color-fi);
+}
+
+.article-category.career {
+  background: var(--color-career-bg);
+  color: var(--color-career);
 }
 
 .article-header h1 {
@@ -1231,6 +1298,15 @@ img {
 
   .form-row {
     flex-direction: column;
+  }
+
+  .tab-btn {
+    font-size: 0.82rem;
+    padding: 12px 14px;
+  }
+
+  .tab-icon {
+    font-size: 1rem;
   }
 
   .nav-toggle {

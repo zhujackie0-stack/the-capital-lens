@@ -17,11 +17,7 @@
     <div class="section-page-header">
       <h1><%= sectionName %></h1>
       <p class="section-description">
-        <% if (category === 'equity') { %>
-          Deep-dive analysis on public equities — valuations, earnings, and investment theses.
-        <% } else { %>
-          Research on bonds, credit markets, interest rates, and fixed-income strategies.
-        <% } %>
+        <%= typeof description !== 'undefined' ? description : '' %>
       </p>
     </div>
 
